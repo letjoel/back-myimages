@@ -10,5 +10,8 @@ export class Image {
 
   @Prop()
   title: string;
+
+  @Prop()
+  id: number; 
 }
 export const ImageSchema = SchemaFactory.createForClass(Image);

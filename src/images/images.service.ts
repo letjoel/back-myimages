@@ -13,11 +13,12 @@ export class ImagesService {
     @InjectModel(Image.name) private readonly imageModel: Model<ImageDocument>,
   ) {}
 
-  async create(createImageDto: CreateImageDto, filename: string): Promise<Image> {
+  async create(createImageDto: CreateImageDto, imageUrl: string): Promise<Image> {
 
     const image = {
       title: createImageDto.title,
-      imageUrl: filename
+      id: Number(createImageDto.id),
+      imageUrl
     }
 
     return this.imageModel.create(image);

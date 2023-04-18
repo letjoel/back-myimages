@@ -56,7 +56,9 @@ export class ImagesController {
       throw new BadRequestException('Make sure file has been correctly loaded')
     }
 
-    return this.imagesService.create(createImageDto, file.filename);
+    const secureUrl = `${process.env.HOST_API}/api/v1/images/${file.filename}`;
+
+    return this.imagesService.create(createImageDto, secureUrl);
   }
 
   @Get()
