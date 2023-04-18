@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateImageDto } from './dto/create-image.dto';
 import { UpdateImageDto } from './dto/update-image.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Image, ImageDocument } from './schemas/image.schema';
 import { Model } from 'mongoose';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ImagesService {
@@ -11,8 +13,14 @@ export class ImagesService {
     @InjectModel(Image.name) private readonly imageModel: Model<ImageDocument>,
   ) {}
 
-  async create(createImageDto: CreateImageDto): Promise<Image> {
-    return this.imageModel.create(createImageDto);
+  async create(createImageDto: CreateImageDto, filename: string): Promise<Image> {
+
+    const image = {
+      title: createImageDto.title,
+      imageUrl: filename
+    }
+
+    return this.imageModel.create(image);
   }
 
   async findAll(): Promise<Image[]> {
@@ -32,4 +40,15 @@ export class ImagesService {
   async remove(id: string) {
     return this.imageModel.findByIdAndRemove({ _id: id }).exec();
   }
+
+
+  async getStaticImage(imageName:string) {
+        const path = join(__dirname, '../../static/uploads',imageName);
+        if (!existsSync(path)){
+            throw new BadRequestException('No image found in this directory')
+        }
+        return path;
+    }
+
+
 }
