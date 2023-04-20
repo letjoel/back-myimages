@@ -12,6 +12,11 @@ Images are saved in a MongoDB with title, url and id.
 
 [Nest](https://github.com/nestjs/nest) framework using TypeScript and Mongoose (MongoDB)
 
+## Documentation
+
+Check documentation with Swagger, just browse to:
+{localhost:port}/docs
+
 ## Installation
 
 ```bash
