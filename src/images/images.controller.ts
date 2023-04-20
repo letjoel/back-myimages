@@ -7,6 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { fileFilter, renameImage } from './helpers/files.helper';
 import { Response } from 'express';
+import { FullImageUpdateDto } from './dto/full-image-update.dto';
 
 @Controller('images')
 @ApiTags('image') 
@@ -14,22 +15,10 @@ import { Response } from 'express';
 export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
-    
-
-  // @Post('/upload')
-  // uploadFile(@UploadedFile() file : Express.Multer.File) {
-
-  //   if (!file) {
-  //     throw new BadRequestException('Make sure file extension is valid')
-  //   }
-
-  //   const secureUrl = `${process.env.HOST_API}/images/upload/${file.filename}`;
-
-  //   return { secureUrl };
-  // }
+  
 
   @Get('/:imageName')
-  async findImage(
+  async findImageByFilename(
     @Res() res: Response,
     @Param('imageName') imageName: string){
       const path = await this.imagesService.getStaticImage(imageName);
@@ -61,23 +50,46 @@ export class ImagesController {
     return this.imagesService.create(createImageDto, secureUrl);
   }
 
+  @Patch('/fullupdate/:id')
+  @UseInterceptors(
+    FileInterceptor(
+      'file',
+      {
+        storage : diskStorage({
+            destination : './static/uploads',
+            filename : renameImage
+        }),
+        fileFilter : fileFilter
+      }
+    )
+  )
+  fullUpdate(@Body() updateImageDto: FullImageUpdateDto, @UploadedFile() file : Express.Multer.File, @Param('id') id: string) {
+    if (!file) {
+      throw new BadRequestException('Make sure file has been correctly loaded')
+    }
+
+    const secureUrl = `${process.env.HOST_API}/api/v1/images/${file.filename}`;
+
+    return this.imagesService.fullUpdate(updateImageDto, secureUrl, +id);
+  }
+
   @Get()
   findAll() {
     return this.imagesService.findAll();
   }
 
-  @Get(':id')
+  @Get('/id/:id')
   findOne(@Param('id') id: string) {
-    return this.imagesService.findOne(id);
+    return this.imagesService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateImageDto: UpdateImageDto) {
-    return this.imagesService.update(id, updateImageDto);
+  update(@Param('id') id: string, @Body() titledto: {title:string}) {
+    return this.imagesService.updateTitle(+id, titledto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.imagesService.remove(id);
   }
 }

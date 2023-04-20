@@ -1,11 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateImageDto } from './dto/create-image.dto';
-import { UpdateImageDto } from './dto/update-image.dto';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Image, ImageDocument } from './schemas/image.schema';
-import { Model } from 'mongoose';
 import { existsSync } from 'fs';
+import { Model } from 'mongoose';
 import { join } from 'path';
+import { CreateImageDto } from './dto/create-image.dto';
+import { FullImageUpdateDto } from './dto/full-image-update.dto';
+import { Image, ImageDocument } from './schemas/image.schema';
+
 
 @Injectable()
 export class ImagesService {
@@ -24,23 +25,44 @@ export class ImagesService {
     return this.imageModel.create(image);
   }
 
+async fullUpdate(updateImageDto: FullImageUpdateDto, imageUrl: string, id:number): Promise<string> {
+
+  const filter = { id };
+  const update = { 
+    title: updateImageDto.title, 
+    imageUrl 
+  };
+
+  const options = { new: true }; 
+
+  const updatedImage = await this.imageModel.findOneAndUpdate(filter, update, options);
+
+  if (updatedImage) {
+    return `Image with id ${id} updated`;
+  } else {
+    throw new NotFoundException(`Image with id ${id} not found`);
+  }
+}
+
   async findAll(): Promise<Image[]> {
     return this.imageModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Image> {
-    return this.imageModel.findOne({ _id: id }).exec();
+  async findOne(id: number): Promise<Image> {
+    return this.imageModel.findOne({ id: id }).exec();
   }
 
-  async update(id: string, updateImageDto: UpdateImageDto): Promise<Image> {
-    return this.imageModel.findOneAndUpdate({ _id: id }, updateImageDto, {
-      new: true,
-    });
-  }
+async updateTitle(id: number, titledto: {title:string}): Promise<Image> {
+  return this.imageModel.findOneAndUpdate({ id: id }, { title: titledto.title }, {
+    new: true,
+  });
+}
 
-  async remove(id: string) {
-    return this.imageModel.findByIdAndRemove({ _id: id }).exec();
+  async remove(id: number) {
+    await this.imageModel.deleteOne({ id: id });
+    return { deleted: true };
   }
+  
 
 
   async getStaticImage(imageName:string) {
@@ -50,6 +72,10 @@ export class ImagesService {
         }
         return path;
     }
+
+  
+
+    
 
 
 }
