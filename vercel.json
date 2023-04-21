@@ -1,5 +1,6 @@
 {
   "version": 1,
+  "outputDirectory": "dist",
   "builds": [
     {
       "src": "src/main.ts",
