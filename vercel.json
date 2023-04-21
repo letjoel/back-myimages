@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "outputDirectory": "dist",
+  "outputDirectory": "static",
   "builds": [
     {
       "src": "src/main.ts",
